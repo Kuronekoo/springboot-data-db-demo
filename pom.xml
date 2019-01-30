@@ -8,6 +8,10 @@
     <artifactId>springboot-data-db-demo</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-
+    <modules>
+        <module>springboot-data-jpa</module>
+        <module>springboot-mybatis-xml</module>
+        <module>springboot-mybatis-pageable</module>
+    </modules>
 
 </project>
