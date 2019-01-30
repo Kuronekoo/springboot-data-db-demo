@@ -2,18 +2,23 @@ package cn.kuroneko.db.demo.repository;
 
 import cn.kuroneko.db.demo.ApplicationTests;
 import cn.kuroneko.db.demo.entity.User;
+import cn.kuroneko.db.demo.specification.MySpecification;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
 
 
 public class JpaTests extends ApplicationTests {
@@ -63,6 +68,62 @@ public class JpaTests extends ApplicationTests {
         list.add(user3);
         userRepository.saveAll(list);
     }
+    @Test
+    public void testSelectExample(){
+        User user = User.builder()
+                .name("张三")
+                .build();
+        Sort sort = new Sort(Sort.Direction.DESC, "createTime");
+        Pageable pageable = PageRequest.of(0, 2, sort);
+        Page<User> all = userRepository.findAll(Example.of(user), pageable);
+        System.out.println(all);
+    }
+    @Test
+    public void testSelectSpecification() throws ParseException {
 
+        Sort sort = new Sort(Sort.Direction.DESC, "createTime");
+        Date date = getyyyymmddDate("2019-01-01");
+        String name = "张三";
+        Pageable pageable = PageRequest.of(0, 2, sort);
+//        Specification<User> specification = new Specification<User>() {
+//            @Override
+//            public Predicate toPredicate(Root<User> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+//                return null;
+//            }
+//        };
+//        Specification<User> specification=(root,query,cb)->{
+//            Predicate predicate  = cb.conjunction();
+//            return predicate;
+//        };
 
+        Page<User> all = userRepository.findAll(
+        (root,query,cb)->{
+            Predicate predicate  = cb.conjunction();
+            if(null!=date){
+                predicate.getExpressions().add(cb.greaterThanOrEqualTo(root.get("createTime"),date));
+            }
+            if(null!=name){
+                predicate.getExpressions().add(cb.like(root.get("name"),String.format("%%%s%%",name)));
+            }
+            return predicate;
+        }
+        ,pageable);
+
+        System.out.println(all);
+    }
+
+    @Test
+    public void testSelectSpecification2() throws ParseException {
+        Sort sort = new Sort(Sort.Direction.DESC, "createTime");
+        String name = "张三";
+        Pageable pageable = PageRequest.of(0, 2, sort);
+        Map<String,Object> condition = new HashMap<>();
+        condition.put("name",name);
+        Page<User> all = userRepository.findAll(new MySpecification<User>(User.class,condition),pageable);
+        System.out.println(all);
+    }
+    public static Date getyyyymmddDate(String dateStr) throws ParseException {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        return simpleDateFormat.parse(dateStr);
+    }
 }
