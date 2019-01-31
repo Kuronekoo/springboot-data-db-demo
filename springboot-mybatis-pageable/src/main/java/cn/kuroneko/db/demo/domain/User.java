@@ -9,7 +9,7 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Date;
 
-@Entity()
+@Entity
 @Table(name = "test_user")
 @Data
 @Builder
@@ -22,6 +22,7 @@ public class User {
     private String name;
     private BigDecimal salary;
     private Integer age;
+    private Long groupId;
     private Date createTime;
 
     @Override
@@ -31,6 +32,7 @@ public class User {
                 ", name='" + name + '\'' +
                 ", salary=" + salary +
                 ", age=" + age +
+                ", groupId=" + groupId +
                 ", createTime=" + createTime +
                 '}';
     }
