@@ -1,12 +1,16 @@
 package cn.kuroneko.db.demo.repository;
 
 import cn.kuroneko.db.demo.ApplicationTests;
+import cn.kuroneko.db.demo.entity.Group;
 import cn.kuroneko.db.demo.entity.User;
 import cn.kuroneko.db.demo.specification.MySpecification;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -19,11 +23,15 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 
 public class JpaTests extends ApplicationTests {
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    GroupRepsitory groupRepsitory;
 
     @Test
     public void testDDl(){
@@ -126,4 +134,33 @@ public class JpaTests extends ApplicationTests {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         return simpleDateFormat.parse(dateStr);
     }
+
+    /**
+     * 使用了懒加载的方法要注解@Transactional，否则会报错,使用eager则不需要事务注解
+     * 由于使用oneToMany，ManyToOne注解之后会出现循环引用的问题，需要重新构成一下关联的list等数据
+     */
+    @Test
+    @Transactional
+    public void testForeignKey(){
+        Group group = groupRepsitory.findById(1l).orElse(new Group());
+        List<User> collect = group.getUsers().stream().map(User::new).collect(Collectors.toList());
+        group.setUsers(collect);
+        System.out.println(JSON.toJSONString(group));
+    }
+
+    /**
+     * 由于使用oneToMany，ManyToOne注解之后会出现循环引用的问题，需要重新构成一下关联的list等数据
+     */
+    @Test
+    @Transactional
+    public void testForeignKey1(){
+       User user = userRepository.findById(1l).orElse(new User());
+       user= new User(user);
+        System.out.println(JSON.toJSONString(user));
+
+//        all.forEach(u->{
+//            System.out.println(JSON.toJSONString(u));
+//        });
+    }
+
 }
