@@ -21,10 +21,16 @@ public class User {
     private Long id;
     private String name;
     private BigDecimal salary;
+    private Long groupId;
     private Integer age;
     private Date createTime;
+    /**
+     * 指定外键名称为groupId,ManyToOne这一行不参与insert和update，懒加载
+     *      * @JoinColumn 详细解释
+     *      * https://blog.csdn.net/u010588262/article/details/76667283
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_id")
+    @JoinColumn(name = "groupId", insertable = false, updatable = false,nullable = true)
     private Group group;
 
     @Override
@@ -43,6 +49,7 @@ public class User {
         this.name = inUser.getName();
         this.salary = inUser.getSalary();
         this.age = inUser.getAge();
+        this.groupId=inUser.getGroupId();
         this.createTime = inUser.getCreateTime();
         this.group=null;
     }

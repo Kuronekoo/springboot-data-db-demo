@@ -6,4 +6,49 @@
         select * from test_user
     </select>
 
+
+    <select id="queryList" resultType="cn.kuroneko.db.demo.domain.User">
+        select * from test_user t
+        where 1=1
+        <if test="condition.name!=null">
+        and t.name  like '%${condition.name}%'
+        </if>
+        <if test="condition.ids!=null">
+            and id in
+            <foreach item="item" index="index" collection="condition.ids" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <insert id="insert" parameterType="cn.kuroneko.db.demo.domain.User">
+        insert into test_user(
+        age,
+        name,
+        salary,
+        group_id,
+        create_time
+        )values (
+        #{age,jdbcType=NUMERIC},
+        #{name,jdbcType=VARCHAR},
+        #{salary,jdbcType=DECIMAL},
+        #{groupId,jdbcType=NUMERIC},
+        sysdate()
+        )
+    </insert>
+    
+    <delete id="delete">
+        delete from test_user where id=#{id}
+    </delete>
+    <update id="update" parameterType="cn.kuroneko.db.demo.domain.User">
+        update test_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name!=null">name=#{name},</if>
+            <if test="salary!=null">salary=#{salary},</if>
+            <if test="age!=null">age=#{age},</if>
+            <if test="groupId!=null">group_id=#{groupId},</if>
+        </trim>
+        where 1=1
+        and id=#{id}
+    </update>
 </mapper>
